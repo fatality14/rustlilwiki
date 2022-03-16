@@ -111,16 +111,46 @@ fn main() {
     // v1 = v3;
 
     //10
-    //there is pointer to pointer syntax allowed using (&mut &mut T) type or simmilar
+    //there is a pointer to pointer syntax allowed using (&mut &mut T) type or simmilar
+
+
+    // trait SampleTrait<V> {
+    //     fn foo<T: Sized>(&self, _p : T) {
+    //         println!("{}", std::any::type_name::<T>());
+    //         println!("{}", std::any::type_name::<V>());
+    //     }
+    // }
+
+    // struct Test();
+    // impl SampleTrait<Test> for Test {}
+
+    // let a = Test();
+    // a.foo(&&&&&a);
+
+    //11
+    //generics could not be typed with (&), (&mut) etc
+    //instead they inherit type of given value
+    //it is allowed to use pointer to pointer in generics using rule 10
+
+    //12
+    //calling method could borrow a type which it is called from
+
+    trait Trait {
+        fn foo(&self)
+        where Self: Default{
+            &self;
+            Self::foo(&self);
+        }
+    }
+
+    struct Test{
+        
+    }
+
+    //13
+    //some self magick here
+
 
     
-    trait Trait<T: Default>{
-
-    }
-
-    struct Test<&T>{
-
-    }
-
     // struct Test<const T: usize>{}
 }
