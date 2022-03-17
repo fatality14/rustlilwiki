@@ -40,6 +40,7 @@ fn main() {
     //(*mut &T) might be assigned with (&mut &T)
     //(&T) might be assigned with (&mut T | &mut &T)
     //(*const) have the same behavior as (*mut)
+    //some more info(https://doc.rust-lang.org/reference/type-coercions.html)
 
     // struct Point {
     //     mut x: i32,
@@ -135,21 +136,113 @@ fn main() {
     //12
     //calling method could borrow a type which it is called from
 
-    trait Trait {
-        fn foo(&self)
-        where Self: Default{
-            &self;
-            Self::foo(&self);
-        }
-    }
 
-    struct Test{
+    // trait Trait<T: ?Sized> {
+    //     fn foo(){
+    //         std::mem::size_of::<T>();
+    //     }
+    // }
+
+    //13.1
+    //? means that T be not sized, but it is not restricted
+    //TODO write where to use it
+
+    // struct Test<const T: usize>{}
+
+    // trait Trait<const T: usize> {
+    //     fn foo(){
+    //         print!("{}",T);
+    //     }
+    // }
+
+    //13.2
+    //there is kinda variable template in here
+    
+
+    // trait Trait /*: Sized*/ {}
+    // struct Test1();
+    // struct Test2();
+
+    // impl Trait for Test1 {}
+    // impl Trait for Test2 {}
+
+    // fn foo(t : dyn Test1){}
+    // fn foo(t : dyn Trait){}
+    // fn foo(t : *mut dyn Trait){}
+    // fn foo(t : &dyn Trait){}
+    // fn foo(t : Box<dyn Trait>){}
+    
+    // foo(&Test1());
+    // foo(&Test2());
+
+    // fn static_foo<T:Trait + ?Sized>(b: T) {}
+    // fn static_foo<T:Trait>(b: T) {}
+    
+    //14
+    //functions must have Sized arguments
+
+    //15.1
+    //(dyn Trait | &dun Trait) declares that trait type must implement (Sized)
+    //pointers have a size, so we can borrow the trait at compile time
+    //wherein the content of the pointer itself might not be sized
+    //15.2
+    //(Sized) traits have a size to be used with (dyn Trait), but if so then they aren't obejct-safe
+    //(https://doc.rust-lang.org/reference/items/traits.html#object-safety)
+    //so it is prohibited to use (dyn Trait)
+    //15.3
+    //(dyn Trait) behavior implicitly works with all types
+    //casue they must have a known size at a compile time according to rule 14
+    //else the program could not be compiled due to asm rules
+    //15.4
+    //the behavior of (dyn Trait) instead might be implemented with generics
+    //15.5
+    //(&dyn Trait) is using vtables to fetch the varibale type
+    //it could be used only with object-safe traits
+
+
+
+    // trait Trait {
+    //     fn foo(&self)
+    //     where Self: Default{
+    //         &self;
+    //         Self::foo(&self);
+    //     }
+    // }
+
+    // struct Test{
         
-    }
+    // }
 
-    //13
+    //n
+    //self methods, traits and vtables
+
+    //n
     //some self magick here
 
+
+
+    //n
+    //some magick with fn and Fn and closures here
+
+
+
+    //n
+    //some magic with variance
+    //https://doc.rust-lang.org/reference/subtyping.html
+
+
+
+    //n
+    //some magick with smart pointers here
+
+
+
+    //n
+    //some magic about macro here
+
+    
+    //n
+    //macro and generics cooperation
 
     
     // struct Test<const T: usize>{}
