@@ -22,9 +22,14 @@ fn main() {
 
     // let a = &mut *mut 3i32;
 
+    // let b: *mut i32 = &mut 1;
+    // unsafe{ *b; <*const i32>::as_ref(b) };
+
     //0
     //variable casts to type while writing (&), (&mut) etc near
     //also it might be casted in the same way using (as)
+    //we can cast pointer types back with (*T)
+    //we can cast raw pointer types back with unsafe (*T) or methor as_ref
 
     //1
     //variable must be the same type as the value while assign
@@ -32,8 +37,8 @@ fn main() {
     //they must be exact the same expect some cases below
 
     //2
-    //while assign type could not be (*mut) or (*const)
-    //but might be (&mut) or (&) or whatever
+    //type could not be casted using (*mut) or (*const)
+    //but might be casted with (&mut) or (&) or just () and other combinations
 
     //3
     //(*mut T) might be assigned with (&mut T)
@@ -42,10 +47,6 @@ fn main() {
     //(*const) have the same behavior as (*mut)
     //some more info(https://doc.rust-lang.org/reference/type-coercions.html)
 
-    // struct Point {
-    //     mut x: i32,
-    //     mut y: i32, // Nope.
-    // }
 
     // let x = 5;
     // x = 6;
@@ -57,15 +58,21 @@ fn main() {
     // let d = &mut c;
 
     //4
-    //there is no (mut) fields
-
-    //5
     //a variable must be (mut) if it could change
     //else it is constant
 
-    //6
-    //(&mut) type variable could only be assigned if variable is marked (mut)
+    //5
+    //(&mut) type variable could only be assigned if assignable variable is marked (mut)
     //rules 1,2,3 are still working while assign
+    
+
+    // struct Point {
+    //     mut x: i32,
+    //     mut y: i32, // Nope.
+    // }
+
+    //6
+    //there is no (mut) fields
 
 
     // let mut s = &3;
@@ -137,6 +144,132 @@ fn main() {
     //calling method could borrow a type which it is called from
 
 
+    // #[derive(Copy, Clone)]
+    // struct Test;
+
+    // fn foo(t : Test){}
+    
+    // let t = Test;
+    // let t1 = t;
+    // foo(t);
+
+    //13
+    //functions must have Sized arguments cause of asm needs
+    //they use the same assign rules as other varibales
+    
+    //14
+    //structs must implement (Clone) and (Copy) traits to avoid move described in rule 7
+    //it is possible to implement a single (Clone) trait to clone contents of pointers by hand
+
+
+    // trait Trait /*: Sized*/ {}
+    // struct Test1();
+    // struct Test2();
+
+    // impl Trait for Test1 {}
+    // impl Trait for Test2 {}
+
+    // fn foo(t : dyn Test1){}
+    // fn foo(t : dyn Trait){}
+    // fn foo(t : *mut dyn Trait){}
+    // fn foo(t : &dyn Trait){}
+    // fn foo(t : Box<dyn Trait>){}
+    
+    // foo(&Test1());
+    // foo(&Test2());
+
+    // fn static_foo<T:Trait + ?Sized>(b: T) {}
+    // fn static_foo<T:Trait>(b: T) {}
+
+    //15.1
+    //(dyn Trait | &dun Trait) declares that trait type must implement (Sized)
+    //pointers have a size, so we can borrow the trait at compile time
+    //wherein the content of the pointer itself might not be sized
+    //15.2
+    //(Sized) traits have a size to be used with (dyn Trait), but if so then they aren't obejct-safe
+    //(https://doc.rust-lang.org/reference/items/traits.html#object-safety)
+    //so we cannot create vtable and that's why it is prohibited to use (dyn Trait)
+    //15.3
+    //(dyn Trait) behavior implicitly works with all types
+    //casue they must have a known size at a compile time according to rule 14
+    //else the program could not be compiled due to asm rules
+    //15.4
+    //the behavior of (dyn Trait) instead might be implemented with generics
+    //15.5
+    //(&dyn Trait) is using vtables to fetch the varibale type
+    //it could be used only with object-safe traits
+
+
+    // trait Trait<'a> where &'a Self: Sized {}
+
+    trait Trait where Self : Sized + Copy{
+        fn bar1(&self){}
+        fn bar2(self){}
+        fn bar3(&mut self){}
+
+        fn foo(&mut self)
+        {
+            // Self::bar1();
+            // bar1();
+            // self.bar1(&self);
+            // Self::bar1(Self);
+
+            Self::bar1(self);
+            Self::bar1(&self);
+            self.bar1();
+            (&self).bar1();
+            (*self).bar1();
+            // (**self).bar1();
+
+            // Self::bar2(self);
+            Self::bar2(*self);
+            self.bar2();
+            
+            Self::bar3(self);
+            self.bar3();
+        }
+    }
+
+    #[derive(Clone, Copy)]
+    struct Test;
+    impl Trait for Test{}
+
+    let t: *mut Test = &mut Test;
+    unsafe{(*t).bar1();}
+    unsafe{(*t).bar2();}
+    
+
+    // trait UBTrait {
+    //     /*unsafe*/ fn bar(self: *const Self);
+    // }
+    // let foo: *const dyn UBTrait = unsafe { std::mem::transmute([0usize, 0x1000usize]) };
+    // foo.bar();
+
+    //n.1
+    //(self) is equals to (*this), and call methods with the same pattern
+    //(self) is a varibale and keep up all variable rules
+    //n.2
+    //(Self) is trait or struct type and keep up all type rules except some rules below
+    //(Self) could be specified using (where) declaration wherever it needed to
+    //n.3
+    //struct operator (.) automatically set (self) argument of declared type in method
+    //n.4
+    //we cannot brake trait vtable using (*const Self) with garbage value
+    //because it is prohibited to use raw pointers with Self type
+
+
+
+    //n
+    //some magick with fn and Fn and closures here
+
+
+
+    //n
+    //some magic with variance
+    //https://doc.rust-lang.org/reference/subtyping.html
+
+
+
     // trait Trait<T: ?Sized> {
     //     fn foo(){
     //         std::mem::size_of::<T>();
@@ -157,78 +290,16 @@ fn main() {
 
     //13.2
     //there is kinda variable template in here
-    
 
-    // trait Trait /*: Sized*/ {}
-    // struct Test1();
-    // struct Test2();
-
-    // impl Trait for Test1 {}
-    // impl Trait for Test2 {}
-
-    // fn foo(t : dyn Test1){}
-    // fn foo(t : dyn Trait){}
-    // fn foo(t : *mut dyn Trait){}
-    // fn foo(t : &dyn Trait){}
-    // fn foo(t : Box<dyn Trait>){}
-    
-    // foo(&Test1());
-    // foo(&Test2());
-
-    // fn static_foo<T:Trait + ?Sized>(b: T) {}
-    // fn static_foo<T:Trait>(b: T) {}
-    
-    //14
-    //functions must have Sized arguments
-
-    //15.1
-    //(dyn Trait | &dun Trait) declares that trait type must implement (Sized)
-    //pointers have a size, so we can borrow the trait at compile time
-    //wherein the content of the pointer itself might not be sized
-    //15.2
-    //(Sized) traits have a size to be used with (dyn Trait), but if so then they aren't obejct-safe
-    //(https://doc.rust-lang.org/reference/items/traits.html#object-safety)
-    //so it is prohibited to use (dyn Trait)
-    //15.3
-    //(dyn Trait) behavior implicitly works with all types
-    //casue they must have a known size at a compile time according to rule 14
-    //else the program could not be compiled due to asm rules
-    //15.4
-    //the behavior of (dyn Trait) instead might be implemented with generics
-    //15.5
-    //(&dyn Trait) is using vtables to fetch the varibale type
-    //it could be used only with object-safe traits
-
-
-
-    // trait Trait {
-    //     fn foo(&self)
-    //     where Self: Default{
-    //         &self;
-    //         Self::foo(&self);
-    //     }
+    // struct Test();    
+    // impl Test {
+    //     fn Test(self) -> Test{Test()}
     // }
 
-    // struct Test{
-        
-    // }
+    //13.3
+    //there is no constructor, new and method overloading
+    //so no standart for implementing it
 
-    //n
-    //self methods, traits and vtables
-
-    //n
-    //some self magick here
-
-
-
-    //n
-    //some magick with fn and Fn and closures here
-
-
-
-    //n
-    //some magic with variance
-    //https://doc.rust-lang.org/reference/subtyping.html
 
 
 
@@ -243,7 +314,4 @@ fn main() {
     
     //n
     //macro and generics cooperation
-
-    
-    // struct Test<const T: usize>{}
 }
