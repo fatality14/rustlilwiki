@@ -327,7 +327,7 @@ fn main() {
 
 
     // let mut i = "123".to_string();
-    // let c = |p: i32|{
+    // let c/*: fn(i32) -> ()*/ = |p: i32|{
     //     i.clear();
     //     // let a = s;
     //     // println!("{}",s);
@@ -347,6 +347,7 @@ fn main() {
     //closure is just a function with current scope visibility
     //it do not copy variables implicitly, so all variable assign rules works the same
     //arguments of closure works the same as (fn) arguments except (self) which is no allowed?
+    //if closure do not use the scope variables than it could be converted to a function pointer
     //n.2
     //it do implement one of (Fn*) traits implicitly according to borrowing rules
     //it is (Fn) by default and if using (&) borrowing
