@@ -1,4 +1,4 @@
-//comment for pure vision, compiler doesnt show all warnings
+//don't forget to comment wrong code or else compiler doesnt show all warnings
 fn main() {
     // fn f1(i: i32){}
     // fn f2(i: &i32){}
@@ -166,6 +166,35 @@ fn main() {
 
     //12
     //calling method could borrow a type which it is called from
+
+
+    // trait TestTrait/*<T>*/{}
+    // struct Test<T>(T);
+    // // impl<T> TestTrait/*<T>*/ for Test<T>{}
+
+    // let t = Test(2);
+    // let t = Test::<i64>(2);
+
+    // impl<I32> TestTrait/*<T>*/ for Test<I32>{}
+    // impl<I64> TestTrait/*<T>*/ for Test<I64>{}
+
+    //n.1
+    //there is generics argument deduction
+    //it is based on argument type
+    //n.2
+    //generics might be stated manually using ::
+    //n.3
+    //there is no specialization in rust except specialization feature
+    //so there is no sfinae in rust which could provide conditionable template/generics overload choose
+
+
+    //n
+    //learn lifetime erasure rules first (https://linkhere)
+    //some magic with variance
+    //https://doc.rust-lang.org/reference/subtyping.html
+    //n
+    //lifetime simply declares that the variable will not be deleted in this scope
+    //TODO provide some example and more explanation
 
 
     // #[derive(Copy, Clone)]
@@ -359,15 +388,19 @@ fn main() {
     //but closure still might be (FnMut) and (Fn)
 
 
-    //n
+    // struct Test<'a>{
+    //     x : &'a mut i32
+    // }
+
+    // let t = Test { x: &mut 1 };
+    // *t.x = 42;
+
+    //n.1
+    //there is interior mutability in language
+    //n.2
     //some magick with smart pointers here
-
-
-    //n
-    //learn lifetime erasure rules first (https://linkhere)
-    //some magic with variance
-    //https://doc.rust-lang.org/reference/subtyping.html
-
+    //https://www.youtube.com/watch?v=8O0Nt9qY_vo
+    //interior mutability
 
 
     // trait Trait<T: ?Sized> {
