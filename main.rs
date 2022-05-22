@@ -186,6 +186,7 @@ fn main() {
     //n.3
     //there is no specialization in rust except specialization feature
     //so there is no sfinae in rust which could provide conditionable template/generics overload choose
+	//instead could be used build.rs and macro
 
 
     //n
@@ -436,7 +437,8 @@ fn main() {
 
     //n
     //some magic about macro here
-
+    //macro_rules is compiler keyword
+    //but proc_macro or build.rs is the way to implement own macro_rules
     
     //n
     //macro and generics cooperation
